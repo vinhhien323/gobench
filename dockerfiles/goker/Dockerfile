@@ -3,10 +3,15 @@
 # Go compiler (i.e. go:1.14)
 FROM ubuntu:18.04
 
-ENV TZ Asia/Shanghai
+ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get update && apt-get install -y git vim wget haskell-platform python graphviz zlib1g-dev
-RUN cabal update && cabal install MissingH split Graphalyze
+RUN apt-get update && apt-get install -y git vim wget haskell-platform python graphviz zlib1g-dev xz-utils pkg-config
+RUN wget https://downloads.haskell.org/~cabal/cabal-install-3.4.0.0/cabal-install-3.4.0.0-x86_64-ubuntu-16.04.tar.xz && \
+    tar -xf cabal-install-3.4.0.0-x86_64-ubuntu-16.04.tar.xz && \
+    mv cabal /usr/local/bin/cabal && \
+    rm cabal-install-3.4.0.0-x86_64-ubuntu-16.04.tar.xz
+RUN cabal v1-update && cabal v1-install network-2.8.0.1 MissingH-1.4.3.0 split Graphalyze
+
 
 RUN wget https://dl.google.com/go/go1.14.11.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.14.11.linux-amd64.tar.gz
