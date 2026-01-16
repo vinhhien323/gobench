@@ -17,12 +17,14 @@ RUN wget https://dl.google.com/go/go1.14.11.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.14.11.linux-amd64.tar.gz
 
 ENV PATH="/usr/local/go/bin:${PATH}"
-ENV GOPATH="/go/"
+ENV GOPATH="/go"
+ENV GO111MODULE=on
 
-RUN go get -v -u github.com/nickng/migo && \
-    go get -v -u github.com/nickng/dingo-hunter || \
-    cd $GOPATH/src/github.com/nickng/dingo-hunter && go test -v . && \
-    go install github.com/nickng/dingo-hunter
+RUN go get github.com/nickng/migo/v3@v3.0.0
+RUN git clone https://github.com/nickng/dingo-hunter.git $GOPATH/src/github.com/nickng/dingo-hunter && \
+    cd $GOPATH/src/github.com/nickng/dingo-hunter && \
+    git checkout v1.0.0 && \
+    go install
 RUN cd $GOPATH/src/github.com/nickng/dingo-hunter && \
     git submodule init && git submodule update && \
     cd third_party/gmc-synthesis && \
@@ -31,13 +33,13 @@ RUN cd $GOPATH/src/github.com/nickng/dingo-hunter && \
     ghc -threaded GMC.hs --make && ghc --make BuildGlobal
 ENV PATH="/go/src/github.com/nickng/dingo-hunter/third_party/gmc-synthesis/petrify/bin:${PATH}"
 
-RUN git clone https://github.com/nickng/gong.git && cd gong && cabal install
+RUN git clone https://github.com/nickng/gong.git && cd gong && cabal v1-install
 ENV PATH="/gong/dist/build/Gong:/go/bin:${PATH}"
 
 RUN apt install -y make rsync python3 python3-pip python3-matplotlib
-RUN go get golang.org/x/tools/cmd/goimports && \
-    go get github.com/sasha-s/go-deadlock && \
-    go get go.uber.org/goleak
+RUN go get golang.org/x/tools/cmd/goimports@v0.1.0 && \
+    go get github.com/sasha-s/go-deadlock@v0.2.0 && \
+    go get go.uber.org/goleak@v1.1.10
 
 RUN pip3 install -U pandas numpy==1.15.4
 
