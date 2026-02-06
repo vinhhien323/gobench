@@ -22,6 +22,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
+	go.uber.org/goleak v1.3.0 // indirect
 	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102 // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	golang.org/x/tools v0.0.0-20201105220310-78b158585360

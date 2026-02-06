@@ -1225,19 +1225,25 @@
       "sed -i '464d' contrib/mesos/pkg/scheduler/scheduler.go"
     ],
     "build_commands": [
-      "make test WHAT=./contrib/mesos/pkg/scheduler"
+      "cd /go/src/k8s.io/kubernetes && make test WHAT=./contrib/mesos/pkg/scheduler"
     ],
     "post_commands": [
       "go get -v github.com/sasha-s/go-deadlock",
-      "go get -v golang.org/x/tools/cmd/goimports",
+      "(git clone https://go.googlesource.com/tools /go/src/golang.org/x/tools && cd /go/src/golang.org/x/tools && git checkout cb1345f3a375)",
+      "(git clone https://go.googlesource.com/mod /go/src/golang.org/x/mod && cd /go/src/golang.org/x/mod && git checkout v0.3.0)",
+      "(git clone https://go.googlesource.com/sync /go/src/golang.org/x/sync && cd /go/src/golang.org/x/sync && git checkout 67f06af15bc9)",
+      "(git clone https://go.googlesource.com/xerrors /go/src/golang.org/x/xerrors && cd /go/src/golang.org/x/xerrors && git checkout 9bdfabe68543)",
+      "(cd /go/src && go install golang.org/x/tools/cmd/goimports)",
       "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.RWMutex/deadlock.RWMutex/'",
       "find /go/src/k8s.io/kubernetes -name \"*.go\" -type f -not -path \"*/testdata/*\" | xargs -n 1 sed -i 's/sync.Mutex/deadlock.Mutex/'",
       "/go/bin/goimports -w /go/src/k8s.io/kubernetes || true",
       "git clone https://github.com/sasha-s/go-deadlock.git Godeps/_workspace/src/github.com/sasha-s/go-deadlock",
       "git clone https://github.com/petermattis/goid.git Godeps/_workspace/src/github.com/petermattis/goid",
-      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/api/unversioned/time.go",
-      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/util/util.go",
-      "make test WHAT=./contrib/mesos/pkg/scheduler"
+      "mkdir -p _output/local/go/src/github.com/sasha-s && cp -r Godeps/_workspace/src/github.com/sasha-s/go-deadlock _output/local/go/src/github.com/sasha-s/go-deadlock || true",
+      "mkdir -p _output/local/go/src/github.com/petermattis && cp -r Godeps/_workspace/src/github.com/petermattis/goid _output/local/go/src/github.com/petermattis/goid || true",
+      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/api/unversioned/time.go || true",
+      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/util/util.go || true",
+      "cd /go/src/k8s.io/kubernetes && make test WHAT=./contrib/mesos/pkg/scheduler"
     ]
   },
   "kubernetes_25331": {

@@ -90,7 +90,8 @@ var DefaultTemp = `FROM golang:{{.GoVersion}}
 RUN git clone {{.RepoUrl}}.git /go/src/{{.SrcPath}}
 {{if .HasDevDeps}}
 # Update development envirnoment
-RUN apt update && apt install -y {{join .DevDeps " "}}
+RUN echo "deb http://archive.debian.org/debian buster main contrib non-free" > /etc/apt/sources.list && \
+    apt-get update && apt-get install -y --allow-unauthenticated {{join .DevDeps " "}}
 {{- end}}
 {{if .HasGoProxy}}
 # Set GOPROXY if needed
@@ -102,6 +103,13 @@ RUN git config --global http.proxy {{.HttpProxy}} && \
 ENV HTTP_PROXY {{.HttpProxy}}
 ENV HTTPS_PROXY {{.HttpProxy}}
 {{- end}}
+# Pin google.golang.org/protobuf to v1.26.0 (before embed was required for Go 1.13 compatibility)
+RUN git clone --branch v1.26.0 https://go.googlesource.com/protobuf /go/src/google.golang.org/protobuf
+# Pin golang.org/x/net and golang.org/x/text to versions compatible with Go 1.13
+RUN git clone https://go.googlesource.com/net /go/src/golang.org/x/net && \
+    cd /go/src/golang.org/x/net && git checkout 16171245cfb2 && \
+    git clone https://go.googlesource.com/text /go/src/golang.org/x/text && \
+    cd /go/src/golang.org/x/text && git checkout v0.3.2
 {{if .HasPkgDeps}}
 # Download needed packages
 RUN {{depjoin .PkgDeps}}

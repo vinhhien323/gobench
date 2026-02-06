@@ -125,6 +125,7 @@ func (g *GoRealExecuter) Build() {
 		Tags:           []string{imageName},
 		Dockerfile:     "bug.Dockerfile",
 		SuppressOutput: true,
+		NoCache:        true,
 	})
 
 	if err != nil {

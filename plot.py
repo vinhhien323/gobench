@@ -53,7 +53,7 @@ def save_fig10(isgoker):
     plt.bar(r, bars[3], bottom=[i+j+k for i,j,k in zip(bars[0], bars[1], bars[2])], color='lightgrey', width=barWidth)
 
     # Custom x axis
-    plt.xticks(r, ['$\it{}$'.format(n) for n in xnames])
+    plt.xticks(r, [r'$\mathit{' + n + r'}$' for n in xnames])
     ax = plt.gca()
     # ax.yaxis.set_major_formatter(mtick.PercentFormatter())
     ticks_loc = ax.get_yticks().tolist()
