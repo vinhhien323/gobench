@@ -92,6 +92,11 @@ func (s *Suite) build() {
 	for _, bug := range bugs {
 		bug := bug
 		tasks = append(tasks, func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("WARNING: Build failed for %s: %v\n", bug.ID, r)
+				}
+			}()
 			execConfig := ExecBugConfig{
 				ExecEnvConfig: s.ExecEnvConfig,
 				Bug:           bug,

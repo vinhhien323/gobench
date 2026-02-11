@@ -3,12 +3,8 @@ package gobench
 import (
 	"context"
 	"fmt"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/archive"
-	"github.com/docker/docker/pkg/jsonmessage"
-	"github.com/hashicorp/go-version"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -16,6 +12,12 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/archive"
+	"github.com/docker/docker/pkg/jsonmessage"
+	"github.com/hashicorp/go-version"
 )
 
 type GoRealExecuter struct {
@@ -163,20 +165,26 @@ func (g *GoRealExecuter) Build() {
 			return
 		}
 
-		tmpCntr.Exec(strings.Split(g.Config.PredStageCmd, " "), g.Config.TestEnvs)
+		logs, exitcode := tmpCntr.Exec(strings.Split(g.Config.PredStageCmd, " "), g.Config.TestEnvs)
+		if exitcode != 0 {
+			log.Printf("WARNING: %s pred stage build failed (exit %d): %s\n", g.Bug.ID, exitcode, string(logs))
+			return
+		}
 
 		// Commit
 		_, err := g.client.ContainerCommit(context.Background(), g.ContainerName, types.ContainerCommitOptions{
 			Reference: g.ImageName,
 		})
 		if err != nil {
-			panic(err)
+			log.Printf("WARNING: %s container commit failed: %v\n", g.Bug.ID, err)
+			return
 		}
 
 		// Remove the container because its image already commited. We will use the container name in the
 		// next stage (i.e. Run()).
 		if RemoveContainer(g.ContainerName) == false {
-			panic(fmt.Sprintf("%s should exist and be removed in the first stage.", g.ContainerName))
+			log.Printf("WARNING: %s container should exist and be removed in the first stage.\n", g.Bug.ID)
+			return
 		}
 	}
 }

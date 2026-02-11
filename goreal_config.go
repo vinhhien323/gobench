@@ -124,7 +124,7 @@ RUN git reset --hard {{.PullSHA}}
 
 # Apply the revert patch to this bug
 COPY ./bug_patch.diff {{.SrcPath}}/bug_patch.diff
-RUN git apply {{.SrcPath}}/bug_patch.diff
+RUN sed -i 's/\r$//' {{.SrcPath}}/bug_patch.diff && git apply {{.SrcPath}}/bug_patch.diff
 {{if .HasPredCMD}}
 # Pred-build
 RUN {{.StrPredBuildCmds}}
