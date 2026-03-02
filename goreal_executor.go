@@ -350,6 +350,23 @@ func (g *GoRealExecuter) Done() {
 	if err := ioutil.WriteFile(backup, []byte(g.log()), 0644); err != nil {
 		panic(err)
 	}
+
+	// Cleanup Docker resources
+	// 1. Remove all stopped containers (including intermediate build containers)
+	if count := PruneStoppedContainers(); count > 0 {
+		log.Printf("Pruned %d stopped containers\n", count)
+	}
+
+	// 2. Remove the main image (this also removes child layers with PruneChildren)
+	if img, ok := FindImage(g.ImageName); ok {
+		RemoveImage(img.ID)
+		log.Printf("Removed image: %s\n", g.ImageName)
+	}
+
+	// 3. Remove dangling (intermediate) images
+	if count := PruneDanglingImages(); count > 0 {
+		log.Printf("Pruned %d dangling images\n", count)
+	}
 }
 
 func (g *GoRealExecuter) GetResult() *BatchRunResult {

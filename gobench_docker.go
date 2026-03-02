@@ -3,16 +3,18 @@ package gobench
 import (
 	"context"
 	"fmt"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 )
 
 func FindImage(name string) (types.ImageSummary, bool) {
@@ -75,6 +77,66 @@ func RemoveImage(id string) bool {
 	}
 
 	return len(items) > 0
+}
+
+// RemoveContainersByImageID removes all containers that were created from the given image ID
+func RemoveContainersByImageID(imageID string) int {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := context.Background()
+
+	// List all containers (including stopped ones)
+	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{All: true})
+	if err != nil {
+		panic(err)
+	}
+
+	removed := 0
+	for _, cntr := range containers {
+		// Check if container's image matches (by ID or partial ID)
+		if strings.HasPrefix(cntr.ImageID, imageID) || strings.HasPrefix(imageID, cntr.ImageID) ||
+			cntr.ImageID == imageID || cntr.Image == imageID {
+			if err := cli.ContainerRemove(ctx, cntr.ID, types.ContainerRemoveOptions{Force: true}); err != nil {
+				log.Printf("Warning: failed to remove container %s: %v\n", cntr.ID[:12], err)
+				continue
+			}
+			removed++
+		}
+	}
+	return removed
+}
+
+// PruneStoppedContainers removes all stopped containers
+func PruneStoppedContainers() int {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	report, err := cli.ContainersPrune(context.Background(), filters.NewArgs())
+	if err != nil {
+		log.Printf("Warning: failed to prune containers: %v\n", err)
+		return 0
+	}
+	return len(report.ContainersDeleted)
+}
+
+// PruneDanglingImages removes all dangling (intermediate) images
+func PruneDanglingImages() int {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	report, err := cli.ImagesPrune(context.Background(), filters.NewArgs())
+	if err != nil {
+		log.Printf("Warning: failed to prune images: %v\n", err)
+		return 0
+	}
+	return len(report.ImagesDeleted)
 }
 
 func RemoveContainer(name string) bool {
