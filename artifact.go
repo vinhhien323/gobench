@@ -207,6 +207,9 @@ func PlotFig10(suites map[string]*Suite, isGoKer bool) {
 	values := [][]float64{}
 	for i := 0; i < len(names); i++ {
 		values = append(values, []float64{0, 0, 0, 0})
+		if suites[names[i]] == nil {
+			continue
+		}
 		var bugs []Bug
 		for _, v := range suites[names[i]].Positives() {
 			bugs = append(bugs, v...)

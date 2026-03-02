@@ -1241,8 +1241,6 @@
       "git clone https://github.com/petermattis/goid.git Godeps/_workspace/src/github.com/petermattis/goid",
       "mkdir -p _output/local/go/src/github.com/sasha-s && cp -r Godeps/_workspace/src/github.com/sasha-s/go-deadlock _output/local/go/src/github.com/sasha-s/go-deadlock || true",
       "mkdir -p _output/local/go/src/github.com/petermattis && cp -r Godeps/_workspace/src/github.com/petermattis/goid _output/local/go/src/github.com/petermattis/goid || true",
-      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/api/unversioned/time.go || true",
-      "sed -i '/import (/a \"github.com\\/google\\/gofuzz\"' _output/local/go/src/k8s.io/kubernetes/pkg/util/util.go || true",
       "cd /go/src/k8s.io/kubernetes && make test WHAT=./contrib/mesos/pkg/scheduler"
     ]
   },
