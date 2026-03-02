@@ -123,9 +123,9 @@ func (s *Suite) Run() {
 	if s.SetUpFunc != nil {
 		s.SetUpFunc()
 	}
-
+	log.Println("Start building suite for ", s.Name, s.Type, s.BugIDs)
 	s.build()
-
+	log.Println("Completed building suite for ", s.Name, s.Type, s.BugIDs)
 	if s.ShutDownFunc != nil {
 		defer s.ShutDownFunc()
 	}
