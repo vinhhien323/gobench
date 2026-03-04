@@ -194,6 +194,30 @@ func TestArtifactSimpleSpecific(t *testing.T) {
 	log.Println(CountValueForFig10(s))
 }
 
+func TestGoRealDebug(t *testing.T) {
+	tests := []struct {
+		Name string
+		Type SubBenchType
+	}{
+		{
+			"go-rd",
+			GoRealNonBlocking,
+		},
+	}
+	suites := make(map[string]*Suite)
+	for _, test := range tests {
+		log.Println("Start suite ", test.Name)
+		suite := NewSuite(defaultSuiteConfig(test.Name, test.Type))
+		suite.Run()
+		suites[suite.Name] = suite
+		log.Println("Done suite ", test.Name)
+	}
+
+	WriteToJson(suites, false, false)
+	WriteToJson(suites, false, true)
+	PlotFig10(suites, false)
+}
+
 func TestArtifactSimpleRace( t *testing.T) {
 	suite := NewSuite(defaultSuiteConfig("go-rd", GoRealNonBlocking))
 	suite.Run()
