@@ -21,6 +21,13 @@ RUN git reset --hard f10a222de1cc756bb14d157b778d820fac3561aa
 
 RUN sed -i '47s/--rm//' Makefile && \
 	sed -i '47s/MOUNT)/MOUNT) -v \/go\/test:\/go\/test --name moby_22941_cntr/' Makefile && \
+	sed -i 's/p80.pool.sks-keyservers.net/keyserver.ubuntu.com/g' Dockerfile && \
+	sed -i '/llvm.org/d' Dockerfile && \
+	sed -i 's/clang-3.8/clang/g' Dockerfile && \
+	sed -i 's/clang++-3.8/clang++/g' Dockerfile && \
+	sed -i 's/storage.googleapis.com\/golang/dl.google.com\/go/g' Dockerfile && \
+	sed -i '/docker-py/,/test-requirements/d' Dockerfile && \
+	sed -i 's/apt-get update/sed -i "s|deb.debian.org|archive.debian.org|g; s|security.debian.org|archive.debian.org|g; \/jessie-updates\/d" \/etc\/apt\/sources.list \&\& apt-get update/g' Dockerfile && \
 	sed -i '31 iRUN apt-get update \&\& apt-get install -y apt-transport-https ca-certificates' Dockerfile && \
 	sed -i '26s/\$COVER //' hack/make/test-unit && \
 	sed -i '26s/go test.*/&\n\t&/' hack/make/test-unit && \

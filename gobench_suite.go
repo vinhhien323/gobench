@@ -89,8 +89,10 @@ func (s *Suite) WorkDir() string {
 func (s *Suite) build() {
 	bugs := s.BugSet.Bugs()
 	var tasks []func()
+	log.Println("Number of bugs in this suite: ", len(bugs))
 	for _, bug := range bugs {
 		bug := bug
+		log.Println("Bug id: ", bug.ID)
 		tasks = append(tasks, func() {
 			defer func() {
 				if r := recover(); r != nil {

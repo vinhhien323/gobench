@@ -21,6 +21,9 @@ RUN git reset --hard 48ed4f0639d2f290603a04ec146beb3f9569280f
 
 RUN sed -i '68s/--rm//' Makefile && \
 	sed -i '68s/MOUNT)/MOUNT) -v \/go\/test:\/go\/test --name moby_29733_cntr/' Makefile && \
+	sed -i 's/p80.pool.sks-keyservers.net/keyserver.ubuntu.com/g' Dockerfile && \
+	sed -i 's|golang.org/dl|dl.google.com/go|g' Dockerfile && \
+	sed -i '/docker-py/,/test-requirements/d' Dockerfile && \
 	sed -i '52s/-cover//' hack/make/test-unit && \
 	sed -i '52s/go test.*/&\n\t&/' hack/make/test-unit && \
 	sed -i '52s/$/ -i/' hack/make/test-unit && \

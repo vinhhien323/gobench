@@ -18,6 +18,13 @@ RUN git apply github.com/moby/moby/bug_patch.diff
 RUN sed -i '50s/--rm//' Makefile && \
     sed -i '50s/MOUNT)/MOUNT) -v \/go\/test:\/go\/test --name moby_18412_cntr/' Makefile && \
     sed -i 's/git.fedorahosted.org\/git/github.com\/lvmteam/' Dockerfile && \
+    sed -i 's/p80.pool.sks-keyservers.net/keyserver.ubuntu.com/g' Dockerfile && \
+    sed -i '/llvm.org/d' Dockerfile && \
+    sed -i 's/clang-3.8/clang/g' Dockerfile && \
+    sed -i 's/clang++-3.8/clang++/g' Dockerfile && \
+    sed -i 's/GO_VERSION 1\.[0-9.]*/GO_VERSION 1.13.15/g' Dockerfile && \
+    sed -i 's/storage.googleapis.com\/golang/dl.google.com\/go/g' Dockerfile && \
+    sed -i '/docker-py/,/test-requirements/d' Dockerfile && \
     sed -i '31 iRUN apt-get update \&\& apt-get install -y apt-transport-https ca-certificates' Dockerfile && \
     sed -i '119,127d' Dockerfile && \
     sed -i '25s/\$COVER //' hack/make/test-unit && \
