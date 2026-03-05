@@ -69,7 +69,10 @@
     "workdir": "./gossip",
     "pred_stage_build_command": "",
     "pred_commands": [
-      "sed -i '87s/\"\\$\\$DIR\"\\/\"\\$\\$OUT\"/\\/go\\/gobench.test/' Makefile"
+      "(git clone https://github.com/robfig/glock.git /go/src/github.com/robfig/glock && cd /go/src/github.com/robfig/glock && git checkout 3419eed && sed -i 's/rev-parse head/rev-parse HEAD/g' save.go && go install github.com/robfig/glock)",
+      "sed -i '87s/\"\\$\\$DIR\"\\/\"\\$\\$OUT\"/\\/go\\/gobench.test/' Makefile",
+      "awk 'NF==2 && $1!=\"cmd\" {print $1, $2}' GLOCKFILE | while read pkg sha; do case \"$pkg\" in golang.org/x/*) url=\"https://go.googlesource.com/${pkg#golang.org/x/}\";; google.golang.org/grpc*) url=\"https://github.com/grpc/grpc-go.git\";; gopkg.in/inf.v0) url=\"https://github.com/go-inf/inf.git\";; gopkg.in/yaml.v1) url=\"https://github.com/go-yaml/yaml.git\";; gopkg.in/*) url=\"https://$pkg\";; *) url=\"https://$pkg.git\";; esac; dst=\"/go/src/$pkg\"; [ ! -d \"$dst\" ] && (git clone --quiet \"$url\" \"$dst\" 2>/dev/null; cd \"$dst\" && git checkout --quiet \"$sha\" 2>/dev/null) || true; done",
+      "touch .bootstrap"
     ],
     "build_commands": [
       "make testbuild TESTFLAGS=-race PKG=./gossip"

@@ -11,6 +11,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/hashicorp/go-version"
 )
 
 func GoRealConfigPath(bug Bug) string {
@@ -103,6 +105,7 @@ RUN git config --global http.proxy {{.HttpProxy}} && \
 ENV HTTP_PROXY {{.HttpProxy}}
 ENV HTTPS_PROXY {{.HttpProxy}}
 {{- end}}
+{{if .NeedDepPinning}}
 # Pin google.golang.org/protobuf to v1.26.0 (before embed was required for Go 1.13 compatibility)
 RUN git clone --branch v1.26.0 https://go.googlesource.com/protobuf /go/src/google.golang.org/protobuf
 # Pin golang.org/x/net and golang.org/x/text to versions compatible with Go 1.13
@@ -110,6 +113,7 @@ RUN git clone https://go.googlesource.com/net /go/src/golang.org/x/net && \
     cd /go/src/golang.org/x/net && git checkout 16171245cfb2 && \
     git clone https://go.googlesource.com/text /go/src/golang.org/x/text && \
     cd /go/src/golang.org/x/text && git checkout v0.3.2
+{{- end}}
 {{if .HasPkgDeps}}
 # Download needed packages
 RUN {{depjoin .PkgDeps}}
@@ -147,6 +151,7 @@ func (c *GoRealBugConfig) UpdateDockerfile() {
 		HasDevDeps, HasGitDeps, HasPkgDeps  bool
 		HasPredCMD, HasBuildCMD, HasPostCMD bool
 		HasGoProxy, HasHttpProxy            bool
+		NeedDepPinning                      bool
 		HttpProxy                           string
 
 		BugPath, StrPredBuildCmds, StrBuildCmds, StrPostBuildCmds string
@@ -167,6 +172,11 @@ func (c *GoRealBugConfig) UpdateDockerfile() {
 
 	needProxy := len(os.Getenv("NEED_PROXY")) > 0
 
+	// Only pin protobuf/net/text for Go >= 1.7 (context package was added in 1.7)
+	minPinVer, _ := version.NewVersion("1.7")
+	goVer, _ := version.NewVersion(c.GoVersion)
+	needPin := goVer != nil && minPinVer != nil && !goVer.LessThan(minPinVer)
+
 	var warpper = ConfigWarpper{
 		GoRealBugConfig:  c,
 		HasDevDeps:       len(c.DevDeps) > 0,
@@ -176,6 +186,7 @@ func (c *GoRealBugConfig) UpdateDockerfile() {
 		HasBuildCMD:      len(c.BuildCmds) > 0,
 		HasPostCMD:       len(c.PostBuildCmds) > 0,
 		HasGoProxy:       false,
+		NeedDepPinning:   needPin,
 		HasHttpProxy:     needProxy,
 		HttpProxy:        os.Getenv("NEED_PROXY"),
 		StrPredBuildCmds: genCMD(c.PredBuildCmds),

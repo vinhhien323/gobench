@@ -136,7 +136,9 @@ func (g *GoRealExecuter) Build() {
 
 	defer resp.Body.Close()
 
-	jsonmessage.DisplayJSONMessagesStream(resp.Body, os.Stdout, os.Stdout.Fd(), true, nil)
+	if err := jsonmessage.DisplayJSONMessagesStream(resp.Body, os.Stdout, os.Stdout.Fd(), true, nil); err != nil {
+		panic(fmt.Errorf("docker build failed for %s: %w", g.Bug.ID, err))
+	}
 
 	if isMoby(g.Bug.ID) {
 		// We need a mounted docker in the second stage
